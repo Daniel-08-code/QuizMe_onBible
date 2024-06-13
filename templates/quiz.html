@@ -1,0 +1,116 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <meta http-equiv="X-UA-Compatible" content="ie=edge" />
+    <title>Quick Quiz - Play</title>
+    <link rel="stylesheet" type="text/css" href="{{ url_for('static', filename='css/style.css') }}">
+    <script>
+        // Fonction pour gérer la sélection des réponses et changer la couleur
+        function selectAnswer(element) {
+            var selectedAnswer = element.innerText.trim();
+            var correctChoice = parseInt(document.getElementById('correctChoice').innerText);
+            var userChoice = parseInt(element.getAttribute('data-choice'));
+            var scoreDisplay = document.getElementById('score');
+            var livesDisplay = document.getElementById('lives');
+        
+            if (userChoice === correctChoice) {
+                element.style.backgroundColor = "green";
+                var currentScore = parseInt(scoreDisplay.innerText);
+                scoreDisplay.innerText = currentScore + 1;
+            } else {
+                element.style.backgroundColor = "red";
+                var currentLives = parseInt(livesDisplay.innerText);
+                livesDisplay.innerText = currentLives - 1;
+                if (currentLives <= 1) { // Décrémenter et vérifier si c'est la dernière vie
+                    // Mettre à jour la partie terminée et rediriger vers la page de score
+                    endGame();
+                    return;
+                }
+            }
+        
+            var choiceContainers = document.getElementsByClassName("choice-container");
+            for (var i = 0; i < choiceContainers.length; i++) {
+                choiceContainers[i].style.pointerEvents = "none";
+            }
+        
+            setTimeout(function() {
+                changerQuestion();
+            }, 500);
+        }
+        
+        function endGame() {
+            // Récupérer le score actuel
+            var currentScore = parseInt(document.getElementById('score').innerText);
+            
+            // Rediriger vers la page de score en envoyant le score comme paramètre d'URL
+            window.location.href = '/score?score=' + currentScore;
+        }
+        
+
+        // Fonction pour charger une nouvelle question
+        function changerQuestion() {
+            var xhr = new XMLHttpRequest();
+            xhr.onreadystatechange = function() {
+                if (xhr.readyState === XMLHttpRequest.DONE) {
+                    if (xhr.status === 200) {
+                        var resultat = JSON.parse(xhr.responseText);
+                        // Met à jour le contenu de la question et des réponses
+                        document.getElementById('question').innerText = resultat[1];
+                        document.getElementById('choiceA').innerText = resultat[2];
+                        document.getElementById('choiceB').innerText = resultat[3];
+                        document.getElementById('choiceC').innerText = resultat[4];
+                        document.getElementById('choiceD').innerText = resultat[5];
+                        // Met à jour le numéro du bon choix
+                        document.getElementById('correctChoice').innerText = resultat[resultat.length - 1];
+                        // Réinitialise la couleur de fond des choix
+                        var choiceContainers = document.getElementsByClassName("choice-container");
+                        for (var i = 0; i < choiceContainers.length; i++) {
+                            choiceContainers[i].style.backgroundColor = "#fff"; // Couleur de fond par défaut
+                            choiceContainers[i].style.pointerEvents = "auto"; // Réactive les choix
+                        }
+                    } else {
+                        console.error('Une erreur est survenue lors de la récupération de la question.');
+                    }
+                }
+            };
+
+            xhr.open('GET', '/changerQuestion', true);
+            xhr.send();
+        }
+    </script>
+</head>
+<body>
+    <div class="logo"><a href="#">  Bible<span>Me</span></a></div>
+    <div class="container">
+        <div id="game" class="justify-center flex-column">
+            <h3 id="question">{{resultat[1]}}</h3>
+
+            <div class="choice-container" onclick="selectAnswer(this)" data-choice="1">
+                <p class="choice-prefix">A</p>
+                <p class="choice-text" id="choiceA">{{resultat[2]}}</p>
+            </div>
+            
+            <div class="choice-container" onclick="selectAnswer(this)" data-choice="2">
+                <p class="choice-prefix">B</p>
+                <p class="choice-text" id="choiceB">{{resultat[3]}}</p>
+            </div>
+            
+            <div class="choice-container" onclick="selectAnswer(this)" data-choice="3">
+                <p class="choice-prefix">C</p>
+                <p class="choice-text" id="choiceC">{{resultat[4]}}</p>
+            </div>
+            
+            <div class="choice-container" onclick="selectAnswer(this)" data-choice="4">
+                <p class="choice-prefix">D</p>
+                <p class="choice-text" id="choiceD">{{resultat[5]}}</p>
+            </div>
+            
+            <div style="display: none;" id="correctChoice">{{resultat[6]}}</div>
+            <div>Score: <span id="score">0</span></div>
+            <div>Vies: <span id="lives">3</span></div>
+        </div>
+    </div>
+</body>
+</html>

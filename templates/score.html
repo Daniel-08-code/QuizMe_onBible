@@ -1,0 +1,27 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Résultats du Quiz</title>
+    <link rel="stylesheet" type="text/css" href="{{ url_for('static', filename='css/style2.css') }}">
+</head>
+<body>
+    <div class="container">
+        <h1>Fin du Quiz</h1>
+        <p>Merci d'avoir participé au quiz!</p>
+        <div class="score">
+            <p>Votre score est : <span id="score"></span></p>
+        </div>
+    </div>
+
+    <script>
+        // Récupérer le score depuis l'URL
+        const urlParams = new URLSearchParams(window.location.search);
+        const score = urlParams.get('score');
+
+        // Afficher le score dans la page
+        document.getElementById('score').innerText = score;
+    </script>
+</body>
+</html>
